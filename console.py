@@ -1,13 +1,22 @@
 #!/usr/bin/python3
-"""documontation"""
+""" Console module for AirBnB """
 import cmd
 from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
 from models import storage
+import re
 import json
-"""import doc"""
+
 
 class HBNBCommand(cmd.Cmd):
-    prompt ="(hbnb)"
+    """Class for the console AirBnB"""
+    prompt = "(hbnb) "
+
     all_class = ["BaseModel", "User", "State",
                  "City", "Amenity", "Place", "Review"]
 
@@ -19,20 +28,20 @@ class HBNBCommand(cmd.Cmd):
     attr_float = ["latitude", "longitude"]
 
     def do_EOF(self, arg):
-        """Cntr + D"""
-        print()
+        """Ctrl-D to exit the program\n"""
         return True
 
     def do_quit(self, arg):
-        """Quit the program"""
+        """Quit command to exit the program\n"""
         return True
 
-    def empty_line(self):
-        """Entre and an empty line-> not execute """
+    def emptyline(self):
+        """an empty line + ENTER shouldnt execute anything\n"""
         pass
 
-    def Do_create(self, arg):
-        class = {
+    def do_create(self, arg):
+        """Creates a new instance :"""
+        classes= {
             "BaseModel": BaseModel,
             "User": User,
             "Place": Place,
@@ -41,81 +50,142 @@ class HBNBCommand(cmd.Cmd):
             "Amenity": Amenity,
             "Review": Review
         }
-        if not arg:
-            print("** class name missing **")
-            return
-
-        if arg not in self.valide_classname:
-            print("** class doesn't exist **")
-            return
-
         if self.valid(arg):
-            argts = arg.split()
-            if argts[0] in class:
-                new_inst = class[argts[0]]()
+            args = arg.split()
+            if args[0] in classes:
+                new = classes[args[0]]()
             storage.save()
-            print(new_inst.id)
+            print(new.id)
 
-    def Do_show(self, arg):
-        """Prints the string representation of an instance"""
-        argts = arg.split(' ')
-        if not argts:
+    def do_clear(self, arg):
+        """Clear data storage :"""
+        storage.all().clear()
+        self.do_all(arg)
+        print("** All data been clear! **")
+
+    def valid(self, arg, _id_flag=False, _att_flag=False):
+        """validation of argument that pass to commands"""
+        args = arg.split()
+        _len = len(arg.split())
+        if _len == 0:
             print("** class name missing **")
-            return
+            return False
+        if args[0] not in HBNBCommand.all_class:
+            print("** class doesn't exist **")
+            return False
+        if _len < 2 and _id_flag:
+            print("** instance id missing **")
+            return False
+        if _id_flag and args[0]+"."+args[1] not in storage.all():
+            print("** no instance found **")
+            return False
+        if _len == 2 and _att_flag:
+            print("** attribute name missing **")
+            return False
+        if _len == 3 and _att_flag:
+            print("** value missing **")
+            return False
+        return True
 
+    def do_show(self, arg):
+        """Prints the string representation of an instance"""
         if self.valid(arg, True):
-            argts = arg.split()
-            _key = argts[0]+"."+argts[1]
+            args = arg.split()
+            _key = args[0]+"."+args[1]
             print(storage.all()[_key])
 
-    def Do_destroy(self, arg):
+    def do_destroy(self, arg):
+        """Deletes an instanc"""
         if self.valid(arg, True):
-            argts = arg.split()
-            _key = argts[0]+"."+argts[1]
+            args = arg.split()
+            _key = args[0]+"."+args[1]
             del storage.all()[_key]
             storage.save()
 
-    def Do_all(self, arg):
-        argts = arg.split()
-        _lenght = len(args)
+    def do_all(self, arg):
+        args = arg.split()
+        _len = len(args)
         my_list = []
-        if _lenght >= 1:
-            if argts[0] not in HBNBCommand.all_class:
+        if _len >= 1:
+            if args[0] not in HBNBCommand.all_class:
                 print("** class doesn't exist **")
                 return
-            for key, val in storage.all().items():
-                if argts[0] in key:
-                    my_list.append(str(val))
+            for key, value in storage.all().items():
+                if args[0] in key:
+                    my_list.append(str(value))
         else:
-            for key, val in storage.all().items():
-                my_list.append(str(val))
+            for key, value in storage.all().items():
+                my_list.append(str(value))
         print(my_list)
 
+    def casting(self, arg):
+        """cast string to float or int if possible"""
+        try:
+            if "." in arg:
+                arg = float(arg)
+            else:
+                arg = int(arg)
+        except ValueError:
+            pass
+        return arg
 
-    def Do_update(self, arg):
-
-        if not argts:
-            print("** class name missing **")
-            return
-
+    def do_update(self, arg):
         if self.valid(arg, True, True):
-            argts = arg.split()
-            _key = argts[0]+"."+argts[1]
-            if argts[3].startswith('"'):
+            args = arg.split()
+            _key = args[0]+"."+args[1]
+            if args[3].startswith('"'):
                 match = re.search(r'"([^"]+)"', arg).group(1)
-            elif argts[3].startswith("'"):
+            elif args[3].startswith("'"):
                 match = re.search(r'\'([^\']+)\'', arg).group(1)
             else:
-                match = argts[3]
-            if argts[2] in HBNBCommand.attr_str:
-                setattr(storage.all()[_key], argts[2], str(match))
-            elif argts[2] in HBNBCommand.attr_int:
-                setattr(storage.all()[_key], argts[2], int(match))
-            elif argts[2] in HBNBCommand.attr_float:
-                setattr(storage.all()[_key], argts[2], float(match))
+                match = args[3]
+            if args[2] in HBNBCommand.attr_str:
+                setattr(storage.all()[_key], args[2], str(match))
+            elif args[2] in HBNBCommand.attr_int:
+                setattr(storage.all()[_key], args[2], int(match))
+            elif args[2] in HBNBCommand.attr_float:
+                setattr(storage.all()[_key], args[2], float(match))
             else:
-                setattr(storage.all()[_key], argts[2], self.casting(match))
+                setattr(storage.all()[_key], args[2], self.casting(match))
             storage.save()
+
+    def count(self, arg):
+        count = 0
+        for key in storage.all():
+            if arg[:-1] in key:
+                count += 1
+        print(count)
+
+    def _exec(self, arg):
+        methods = {
+            "all": self.do_all,
+            "count": self.count,
+            "show": self.do_show,
+            "destroy": self.do_destroy,
+            "update": self.do_update,
+            "create": self.do_create
+        }
+        match = re.findall(r"^(\w+)\.(\w+)\((.*)\)", arg)
+        args = match[0][0]+" "+match[0][2]
+        _list = args.split(", ")
+        _list[0] = _list[0].replace('"', "").replace("'", "")
+        if len(_list) > 1:
+            _list[1] = _list[1].replace('"', "").replace("'", "")
+        args = " ".join(_list)
+        if match[0][1] in methods:
+            methods[match[0][1]](args)
+
+    def default(self, arg):
+        """Default if there no command found"""
+        match = re.findall(r"^(\w+)\.(\w+)\((.*)\)", arg)
+        if len(match) != 0 and match[0][1] == "update" and "{" in arg:
+            _dict = re.search(r'{([^}]+)}', arg).group()
+            _dict = json.loads(_dict.replace("'", '"'))
+            for k, v in _dict.items():
+                _arg = arg.split("{")[0]+k+", "+str(v)+")"
+                self._exec(_arg)
+        elif len(match) != 0:
+            self._exec(arg)
 
 
 if __name__ == "__main__":
