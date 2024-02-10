@@ -3,6 +3,7 @@
 
 import uuid
 from datetime import datetime
+import models
 """this is the import documentation"""
 
 class BaseModel:
@@ -19,12 +20,16 @@ class BaseModel:
                         value, "%Y-%m-%dT%H:%M:%S.%f")
                 elif key != "__class__":
                     self.__dict__[key] = value
-    
+        else:
+            models.storage.new(self)
+
+
     def __str__(self):
         return f"[{type(self).__name__}] ({self.id}) {self.__dict__}"
 
     def save(self):
         self.updated_at = datetime.now()
+        models.storage.save()
 
     def to_dict(self):
         todict = dict(self.__dict__)
