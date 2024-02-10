@@ -41,7 +41,7 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, arg):
         """Creates a new instance :"""
-        classes= {
+        classes = {
             "BaseModel": BaseModel,
             "User": User,
             "Place": Place,
