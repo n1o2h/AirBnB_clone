@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="/workspaces/AirBnB_clone/65f4a1dd9c51265f49d0.png" alt="airbnb logo">
+  <img src="https://github.com/n1o2h/AirBnB_clone/blob/master/65f4a1dd9c51265f49d0.png?raw=true" alt="airbnb logo">
 </p>
 <h1>0x00. AirBnB clone - The console</h1>
 <hr>
