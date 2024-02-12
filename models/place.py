@@ -1,9 +1,6 @@
 #!/usr/bin/python3
-""" Place file"""
 from models.base_model import BaseModel
-""" import section"""
 class Place(BaseModel):
-""" the class documentation"""
     name = ""
     user_id = ""
     city_id = ""
