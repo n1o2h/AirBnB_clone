@@ -1,33 +1,58 @@
 #!/usr/bin/python3
-"""import documontation"""
+""" Documontation import """
 import json
+import os
 from models.base_model import BaseModel
+from models.user import User
+from models.place import Place
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.review import Review
+
 
 class FileStorage:
-    """class documontation"""
+
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-        return self.__objects
+        return FileStorage.__objects
 
     def new(self, obj):
-        key = "{}.{}".format(type(obj).__name__, obj.id)
-        self.__objects[key] = obj
+        id = obj.to_dict()["id"]
+        className = obj.to_dict()["__class__"]
+        keyName = className+"."+id
+        FileStorage.__objects[keyName] = obj
 
     def save(self):
-        serialized_objts = {}
-        for key, obj in self.__objects.items():
-            serialized_objects[key] = obj.to_dict()
-        with open(self.__file_path, 'w') as fl:
-            json.dump(serialized_objts, fl)
+        filepath = FileStorage.__file_path
+        data = dict(FileStorage.__objects)
+        for key, value in data.items():
+            data[key] = value.to_dict()
+        with open(filepath, 'w') as f:
+            json.dump(data, f)
 
     def reload(self):
-        with open(self.__file_path, 'r') as f:
-            loaded_objects = json.load(f)
-                for key, obj_dict in loaded_objects.items():
-                    class_name, obj_id = key.split('.')
-                    obj = BaseModel.from_dict(obj_dict)
-                    self.__objects[key] = obj
-        except FileNotFoundError:
-            pass
+        filepath = FileStorage.__file_path
+        data = FileStorage.__objects
+        if os.path.exists(filepath):
+            try:
+                with open(filepath) as f:
+                    for key, value in json.load(f).items():
+                        if "BaseModel" in key:
+                            data[key] = BaseModel(**value)
+                        if "User" in key:
+                            data[key] = User(**value)
+                        if "Place" in key:
+                            data[key] = Place(**value)
+                        if "State" in key:
+                            data[key] = State(**value)
+                        if "City" in key:
+                            data[key] = City(**value)
+                        if "Amenity" in key:
+                            data[key] = Amenity(**value)
+                        if "Review" in key:
+                            data[key] = Review(**value)
+            except Exception:
+                pass
