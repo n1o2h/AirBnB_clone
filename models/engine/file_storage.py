@@ -1,44 +1,33 @@
 #!/usr/bin/python3
-""" import docum """
+"""import documontation"""
 import json
-import os
 from models.base_model import BaseModel
 
 class FileStorage:
-    """class docum"""
-
+    """class documontation"""
     __file_path = "file.json"
     __objects = {}
 
     def all(self):
-
-        return FileStorage.__objects
+        return self.__objects
 
     def new(self, obj):
-
-        id = obj.to_dict()["id"]
-        class_Name = obj.to_dict()["__class__"]
-        key_Name = class_Name+"."+id
-        FileStorage.__objects[key_Name] = obj
+        key = "{}.{}".format(type(obj).__name__, obj.id)
+        self.__objects[key] = obj
 
     def save(self):
-
-        filePath = FileStorage.__file_path
-        data = dict(FileStorage.__objects)
-        for key, value in data.items():
-            data[key] = value.to_dict()
-        with open(filePath, 'w') as f:
-            json.dump(data, f)
+        serialized_objts = {}
+        for key, obj in self.__objects.items():
+            serialized_objects[key] = obj.to_dict()
+        with open(self.__file_path, 'w') as fl:
+            json.dump(serialized_objts, fl)
 
     def reload(self):
-
-        filePath = FileStorage.__file_path
-        data = FileStorage.__objects
-        if os.path.exists(filePath):
-            try:
-                with open(filePath) as fl:
-                    for key, value in json.load(fl).items():
-                        if "BaseModel" in key:
-                            data[key] = BaseModel(**value)
-            except Exception:
-                pass
+        with open(self.__file_path, 'r') as f:
+            loaded_objects = json.load(f)
+                for key, obj_dict in loaded_objects.items():
+                    class_name, obj_id = key.split('.')
+                    obj = BaseModel.from_dict(obj_dict)
+                    self.__objects[key] = obj
+        except FileNotFoundError:
+            pass
